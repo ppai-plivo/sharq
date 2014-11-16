@@ -32,6 +32,6 @@ if redis.call('EXISTS', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ARGV[1]) ~= 1 then
 end
 
 -- delete the requeues_remaining entry for this job.
-redis.call('HDEL', KEYS[1] .. ':' .. KEYS[2] .. ARGV[1] .. ':requeues_remaining', ARGV[2])
+redis.call('HDEL', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ARGV[1] .. ':requeues_remaining', ARGV[2])
 
 return 1

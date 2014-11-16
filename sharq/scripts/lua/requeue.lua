@@ -17,13 +17,13 @@ for _, job in pairs(requeue_job_list) do
    local requeue = true
    local queue_id, job_id = job:match("([^,]+):([^,]+)")
    -- check if the job has any pending requeues.
-   local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. queue_id .. ':requeues_remaining', job_id)
+   local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. queue_id .. ':requeues_remaining', job_id)
    if tonumber(requeues_remaining) > -1 then
       -- finite requeues_remaining. decrement by one and check.
       requeues_remaining = requeues_remaining - 1
       -- update the new requeues_remaining value.
-      redis.call('HSET', KEYS[1] .. ':' .. KEYS[2] .. queue_id .. ':requeues_remaining', job_id, requeues_remaining)
-      if requeues_remaining == 0 then
+      redis.call('HSET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. queue_id .. ':requeues_remaining', job_id, requeues_remaining)
+      if requeues_remaining == -1 then
          -- discard this job
 	 table.insert(job_discard_list, job)
          -- using these flags as Lua doesn't support 'continue'

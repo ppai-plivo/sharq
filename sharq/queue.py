@@ -198,7 +198,7 @@ class SharQ(object):
 
         dequeue_response = self._lua_dequeue(keys=keys, args=args)
 
-        if len(dequeue_response) < 3:
+        if len(dequeue_response) < 4:
             response = {
                 'status': 'failure'
             }

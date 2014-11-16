@@ -44,7 +44,7 @@ if next(ready_queue_id_list) ~= nil then
    redis.call('SADD', KEYS[1] .. ':active:queue_type', KEYS[2])
 
    -- get the requeues_remaining for this job
-   local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. ready_queue_id .. ':requeues_remaining', job_id)
+   local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id .. ':requeues_remaining', job_id)
 
    -- update the metrics counters
    -- update global counter.
