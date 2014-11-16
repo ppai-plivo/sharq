@@ -6,8 +6,8 @@ import signal
 import ConfigParser
 import redis
 from sharq.utils import (is_valid_identifier, is_valid_interval,
-                         serialize_payload, deserialize_payload,
-                         generate_epoch)
+                         is_valid_requeue_limit, generate_epoch,
+                         serialize_payload, deserialize_payload)
 from sharq.exceptions import SharqException, BadArgumentException
 
 
@@ -122,7 +122,7 @@ class SharQ(object):
         self._load_lua_scripts()
 
     def enqueue(self, payload, interval, job_id,
-                queue_id, queue_type='default'):
+                queue_id, queue_type='default', requeue_limit=-1):
         """Enqueues the job into the specified queue_id
         of a particular queue_type
         """
@@ -138,6 +138,9 @@ class SharQ(object):
 
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
+
+        if not is_valid_requeue_limit(requeue_limit):
+            raise BadArgumentException('`requeue_limit` has an invalid value.')
 
         try:
             serialized_payload = serialize_payload(payload)
@@ -156,7 +159,8 @@ class SharQ(object):
             queue_id,
             job_id,
             '"%s"' % serialized_payload,
-            interval
+            interval,
+            requeue_limit
         ]
 
         self._lua_enqueue(keys=keys, args=args)
