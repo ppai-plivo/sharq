@@ -37,7 +37,11 @@ class SharQ(object):
         """
         self._key_prefix = self._config.get('redis', 'key_prefix')
         self._job_expire_interval = int(
-            self._config.get('sharq', 'job_expire_interval'))
+            self._config.get('sharq', 'job_expire_interval')
+        )
+        self._default_job_requeue_limit = int(
+            self._config.get('sharq', 'default_job_requeue_limit')
+        )
 
         # initalize redis
         redis_connection_type = self._config.get('redis', 'conn_type')
@@ -122,7 +126,7 @@ class SharQ(object):
         self._load_lua_scripts()
 
     def enqueue(self, payload, interval, job_id,
-                queue_id, queue_type='default', requeue_limit=-1):
+                queue_id, queue_type='default', requeue_limit=None):
         """Enqueues the job into the specified queue_id
         of a particular queue_type
         """
@@ -138,6 +142,9 @@ class SharQ(object):
 
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
+
+        if requeue_limit is None:
+            requeue_limit = self._default_job_requeue_limit
 
         if not is_valid_requeue_limit(requeue_limit):
             raise BadArgumentException('`requeue_limit` has an invalid value.')
@@ -197,14 +204,15 @@ class SharQ(object):
             }
             return response
 
-        queue_id, job_id, payload = dequeue_response
+        queue_id, job_id, payload, requeues_remaining = dequeue_response
         payload = deserialize_payload(payload[1:-1])
 
         response = {
             'status': 'success',
             'queue_id': queue_id,
             'job_id': job_id,
-            'payload': payload
+            'payload': payload,
+            'requeues_remaining': int(requeues_remaining)
         }
 
         return response
@@ -307,7 +315,17 @@ class SharQ(object):
             args = [
                 timestamp
             ]
-            self._lua_requeue(keys=keys, args=args)
+            job_discard_list = self._lua_requeue(keys=keys, args=args)
+            # discard the jobs if any
+            for job in job_discard_list:
+                queue_id, job_id = job.split(':')
+                # explicitly finishing a job
+                # is nothing but discard.
+                self.finish(
+                    job_id=job_id,
+                    queue_id=queue_id,
+                    queue_type=queue_type
+                )
 
     def metrics(self, queue_type=None, queue_id=None):
         """Provides a way to get statistics about various parameters like,

@@ -460,6 +460,10 @@ class SharQTest(unittest.TestCase):
         self.assertIn('job_id', response)
         response.pop('job_id')
 
+        # check if it has a key called 'requeues_remaining'
+        self.assertIn('requeues_remaining', response)
+        response.pop('requeues_remaining')
+
         # make sure nothing else in response
         # except the above key / value pairs
         self.assertEqual(response, {})
@@ -488,6 +492,10 @@ class SharQTest(unittest.TestCase):
         # check if it has a key called 'job_id'
         self.assertIn('job_id', response)
         response.pop('job_id')
+
+        # check if it has a key called 'requeues_remaining'
+        self.assertIn('requeues_remaining', response)
+        response.pop('requeues_remaining')
 
         # make sure nothing else in response
         # except the above key / value pairs
