@@ -7,7 +7,7 @@
 --     ARGV[1] - <current_timestamp>
 --     ARGV[2] - <job_expiry_interval>
 -- output:
---     { queue_id, job_id, payload }
+--     { queue_id, job_id, payload, requeues_remaining }
 
 
 local ready_queue_id_list = redis.call('ZRANGEBYSCORE', KEYS[1] .. ':' .. KEYS[2], 0, ARGV[1])

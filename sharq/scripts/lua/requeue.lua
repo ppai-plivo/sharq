@@ -7,7 +7,7 @@
 --     ARGV[1] - <current_timestamp>
 --
 -- output:
---     nil
+--     {} or job_discard_list
 
 -- check if any of the jobs need to be retried
 local requeue_job_list = redis.call('ZRANGEBYSCORE', KEYS[1] .. ':' .. KEYS[2] .. ':active', 0, ARGV[1])
